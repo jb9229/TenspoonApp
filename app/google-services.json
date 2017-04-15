@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "152231166400",
+    "firebase_url": "https://tenspoon-onebowl.firebaseio.com",
+    "project_id": "tenspoon-onebowl",
+    "storage_bucket": "tenspoon-onebowl.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:152231166400:android:717a30431d209944",
+        "android_client_info": {
+          "package_name": "com.ts.tsadmobtest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "152231166400-07oc3c5tbj5lteatgrlli1lu5kuokaj8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCErtSRmwSq2UrNS_Et_v1aFPE45vfkgUs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
