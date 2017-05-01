@@ -18,11 +18,11 @@
         android:textSize="10pt"
         android:textStyle="bold"/>
 
-    <ImageView
-        android:id="@+id/side_img"
+    <WebView
         android:layout_width="match_parent"
-        android:layout_height="220dp"
-        />
+        android:layout_height="wrap_content"
+        android:id="@+id/side_video_webView"
+        android:layout_weight="0.83" />
 
     <TextView
         android:id="@+id/side_total_text"
@@ -50,8 +50,16 @@
         android:maxLines="15"
         android:padding="5dp"
         android:scrollbars="vertical"
-        android:background="#EDEDED"
+        android:background="#DDE9EC"
         android:textSize="8pt"
         android:typeface="serif"
         />
+
+    <Button
+        android:text="후원 결과"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#a7c5cc"
+        android:id="@+id/preDodaResultButton" />
+
 </LinearLayout>

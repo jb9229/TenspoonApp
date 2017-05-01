@@ -4,9 +4,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Handler;
+import android.support.annotation.RequiresApi;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.os.Bundle;
@@ -22,6 +26,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -35,6 +43,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
@@ -61,6 +70,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class LockScreenActivity extends Activity {
     private static final int SPOON_UP_EXPORSE   =   1;
@@ -69,7 +79,7 @@ public class LockScreenActivity extends Activity {
     private static final String URL_SPOON_UP    =   "/api/v1/spoon/rice/add/{accountId}/{rice}";
     private static final String URL_SPOON_GET   =   "/api/v1/spoon/{accountId}";
 
-    private static final String ADMOB_AD_UNIT_ID    = "ca-app-pub-3940256099942544/2247696110";
+    private static final String ADMOB_AD_UNIT_ID   = "ca-app-pub-3940256099942544/2247696110";
     private static final String ADMOB_APP_ID        = "ca-app-pub-3940256099942544~3347511713";
 
     private TextView poemTextView;
@@ -87,11 +97,15 @@ public class LockScreenActivity extends Activity {
     private CheckBox mRequestAppInstallAds;
     private CheckBox mRequestContentAds;
 
+    //Side View Object
     TextView sideRiceProgTxView;
-    ImageView donationIMGView;
     ProgressBar sideRiceProgress;
     TextView sideContentsTextView;
     TextView sideTitleTextView;
+
+    WebView sideVideoWebView;
+
+    Button  sideDonaResultButt;
 
     Thread tTask;
 
@@ -106,6 +120,7 @@ public class LockScreenActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen);
 
+        //Poem Area
         poemTextView    =   (TextView) findViewById(R.id.poemTextView);
 
         String poem =   "해당화\n\n\n\n 이육사 \n\n\n 당신은 봄이 오기 전에 오신다고 하였습니다. \n 봄은 이미 지났습니다.";
@@ -114,13 +129,6 @@ public class LockScreenActivity extends Activity {
         poemStrBuilder.setSpan(new StyleSpan(Typeface.BOLD), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         poemTextView.setText(poemStrBuilder);
-//        setContentView(R.layout.ad_express);
-
-//        NativeExpressAdView adView = (NativeExpressAdView) findViewById(R.id.adView);
-////        adView.setAdSize(AdSize.SMART_BANNER);
-//        adView.loadAd(new AdRequest.Builder().build());
-
-//        frameLayout.removeAllViews();
 
 
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -167,6 +175,7 @@ public class LockScreenActivity extends Activity {
         tTask.start();
 
 
+        //Side View Area
         mDrawerToggle = new ActionBarDrawerToggle(this, drawLayout,
                 null, R.string.drawer_open, R.string.drawer_close) {
 
@@ -193,7 +202,7 @@ public class LockScreenActivity extends Activity {
         // Set the drawer toggle as the DrawerListener
         drawLayout.addDrawerListener(mDrawerToggle);
 
-        ListView listView = (ListView) findViewById(R.id.left_drawer);
+        ListView sideListview = (ListView) findViewById(R.id.left_drawer);
 
         // 아이템을 추가
         ArrayList<String> items = new ArrayList<>();
@@ -202,36 +211,10 @@ public class LockScreenActivity extends Activity {
         items.add("item3");
         items.add("item4");
         items.add("item5");
+        items.add("item6");
 
         CustomAdapter adapter = new CustomAdapter(this, 0, items);
-        listView.setAdapter(adapter);
-
-        // 아이템을 [클릭]시의 이벤트 리스너를 등록
-//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                ListView listView = (ListView) parent;
-//                // TODO 아이템 클릭시에 구현할 내용은 여기에.
-//                String item = (String) listView.getItemAtPosition(position);
-//                Toast.makeText(LockScreenActivity.this, item, Toast.LENGTH_LONG).show();
-//            }
-//        });
-
-        // 아이템을 [선택]시의 이벤트 리스너를 등록
-//        listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//            @Override
-//            public void onItemSelected(AdapterView<?> parent, View view,
-//                                       int position, long id) {
-//                ListView listView = (ListView) parent;
-//                // TODO 아이템 선택시에 구현할 내용은 여기에.
-//                String item = (String) listView.getSelectedItem();
-//                Toast.makeText(LockScreenActivity.this, item, Toast.LENGTH_LONG).show();
-//            }
-//
-//            @Override
-//            public void onNothingSelected(AdapterView<?> parent) {
-//            }
-//        });
+        sideListview.setAdapter(adapter);
 
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
@@ -262,6 +245,42 @@ public class LockScreenActivity extends Activity {
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        AppIndex.AppIndexApi.start(client, getIndexApiAction());
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.end(client, getIndexApiAction());
+        client.disconnect();
+    }
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    public Action getIndexApiAction() {
+        Thing object = new Thing.Builder()
+                .setName("LockScreen Page") // TODO: Define a title for the content shown.
+                // TODO: Make sure this auto-generated URL is correct.
+                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+                .build();
+        return new Action.Builder(Action.TYPE_VIEW)
+                .setObject(object)
+                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
+                .build();
     }
 
 
@@ -465,6 +484,8 @@ public class LockScreenActivity extends Activity {
         installBut.performClick();
     }
 
+
+    // Lock Slide
     private void increaseExposeCnt() {
         boolean netState   =   checkNetwork();
 
@@ -518,42 +539,6 @@ public class LockScreenActivity extends Activity {
         this.finish();
     }
 
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    public Action getIndexApiAction() {
-        Thing object = new Thing.Builder()
-                .setName("LockScreen Page") // TODO: Define a title for the content shown.
-                // TODO: Make sure this auto-generated URL is correct.
-                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
-                .build();
-        return new Action.Builder(Action.TYPE_VIEW)
-                .setObject(object)
-                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
-                .build();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        AppIndex.AppIndexApi.start(client, getIndexApiAction());
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.end(client, getIndexApiAction());
-        client.disconnect();
-    }
-
 
     private void setVerticalAdImageArea(ImageView adImageView) {
 //        adImageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1500));
@@ -582,16 +567,32 @@ public class LockScreenActivity extends Activity {
             jsonSpoon   =   jsonArr.getJSONObject(0);
             jsonBowl    =   jsonSpoon.getJSONObject("bowl");
 
-            String donIMGPath    =   jsonBowl.getString("imgPath");
+            String videoUrl    =   jsonBowl.getString("imgPath");
 
             int riceTol     =   jsonBowl.getInt("riceTol");
             int riceAim     =   jsonBowl.getInt("riceAim");
 
+//            String videoUrl =   jsonBowl.getString("videoUrl");
+
+//            String videoUrl =   "https://player.vimeo.com/video/209839145";
+//            String data_html = "<!DOCTYPE HTML> <html xmlns='http://www.w3.org/1999/xhtml' xmlns:og='http://opengraphprotocol.org/schema/' " +
+//                    "xmlns:fb='http://www.facebook.com/2008/fbml'> " +
+//                    "<head><meta http-equiv='Content-Security-Policy' " +
+//                    "content='default-src * gap:; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src *; img-src * data: blob: " +
+//                    "android-webview-video-poster:; style-src * 'unsafe-inline';></head> " +
+//                    "<body style='margin:0 0 0 0; padding:0 0 0 0;'> " +
+//                    "<iframe width='225' height='160' src='https://player.vimeo.com/video/209839145' frameborder='0'></iframe> </body> </html> ";
+//
+//            String cspMetaTag   =   "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'self' cdvfile://*; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src *; img-src * data: blob: android-webview-video-poster:; style-src * 'unsafe-inline';\">";
+//
+//            String data_html = "<html> <head> "+ cspMetaTag +
+//                    " </head> <body>" +
+//                    "<iframe src=\"https://player.vimeo.com/video/209839145\" width=\"225\" height=\"160\" frameborder=\"0\" ></iframe>" +
+//                    "</body></html>";
+//
+//            videoUrl    =   "<iframe src='https://player.vimeo.com/video/209839145' width='225' height='160' frameborder='0' webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>";
 
             sideTitleTextView.setText(jsonBowl.getString("title"));
-
-
-            donationIMGView.setImageBitmap(new AsyncHttpIMGRequest(donIMGPath).execute().get());
 
             sideRiceProgTxView.setText(riceTol+"/"+riceAim+"(원)");
 
@@ -600,13 +601,19 @@ public class LockScreenActivity extends Activity {
 
             sideContentsTextView.setText(jsonBowl.getString("contents"));
 
+            sideVideoWebView.setWebViewClient(new WebViewClient()); // 이걸 안해주면 새창이 뜸
+            sideVideoWebView.setWebChromeClient(new WebChromeClient());
+            sideVideoWebView.getSettings().setJavaScriptEnabled(true);
+            sideVideoWebView.getSettings().setAppCacheEnabled(true);
+            sideVideoWebView.getSettings().setBuiltInZoomControls(true);
+            sideVideoWebView.getSettings().setSaveFormData(true);
+//            sideVideoWebView.loadUrl(videoUrl);
+            sideVideoWebView.loadData(videoUrl, "text/html",  "UTF-8");
+
         }
         catch (InterruptedException e) {e.printStackTrace();}
         catch (ExecutionException e) {e.printStackTrace();}
         catch (JSONException e) {e.printStackTrace();}
-
-
-
     }
 
 
@@ -618,6 +625,7 @@ public class LockScreenActivity extends Activity {
             this.items = objects;
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
         public View getView(int position, View convertView, ViewGroup parent) {
             View v = convertView;
             if (v == null) {
@@ -630,8 +638,10 @@ public class LockScreenActivity extends Activity {
                     v = sideTitleTextView;
 
                 } else if ("item2".equals(items.get(position))) {
-                    donationIMGView = (ImageView) sideLayout.findViewById(R.id.side_img);
-                    v = donationIMGView;
+                    sideVideoWebView = (WebView) sideLayout.findViewById(R.id.side_video_webView);
+                    v = sideVideoWebView;
+
+                    setSideVideoView();
 
                 } else if ("item3".equals(items.get(position))) {
                     sideRiceProgTxView = (TextView) sideLayout.findViewById(R.id.side_total_text);
@@ -646,6 +656,9 @@ public class LockScreenActivity extends Activity {
                     v = sideContentsTextView;
 
                     sideContentsTextView.setMovementMethod(new ScrollingMovementMethod());
+                } else if ("item6".equals(items.get(position))) {
+                    sideDonaResultButt = (Button) sideLayout.findViewById(R.id.preDodaResultButton);
+                    v = sideDonaResultButt;
                 }
             }
 
@@ -665,6 +678,14 @@ public class LockScreenActivity extends Activity {
 //            });
 
             return v;
+        }
+    }
+
+
+    private void setSideVideoView() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            sideVideoWebView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
     }
 

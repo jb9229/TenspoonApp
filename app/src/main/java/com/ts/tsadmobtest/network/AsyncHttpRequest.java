@@ -32,10 +32,10 @@ import java.util.concurrent.ExecutionException;
  */
 
 public class AsyncHttpRequest extends AsyncTask<String, Void, String> {
-//    public static final String REQUEST_URL                         =   "http://sample-env-1.eunximeeda.ap-northeast-2.elasticbeanstalk.com/";
-    public static final String REQUEST_URL                         =   "http://192.168.43.135:8080/";
+    public static final String REQUEST_URL                         =   "http://sample-env-1.eunximeeda.ap-northeast-2.elasticbeanstalk.com/";
+//    public static final String REQUEST_URL                         =   "http://192.168.43.135:8080/";
     public final int RETURN_TYPE_IMAGE      =   2;
-//    String REQUEST_URL                    =   "http://192.168.43.135:8080";
+//    public static final String REQUEST_URL                    =   "http://192.168.43.135:8080";
 //    String REQUEST_URL                    =   "http://172.30.1.21:8080";
 
     public final static String REQUESTMETHOD_GET    =   "GET";
