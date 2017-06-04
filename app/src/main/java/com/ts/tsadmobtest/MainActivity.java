@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final Intent reactRootIntent  =   new Intent(this, TSReactActivity.class);
+//        final Intent reactRootIntent  =   new Intent(this, TSReactActivity.class);
 
         adSwitch    =   (Switch) findViewById(R.id.adSwitch);
 
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
                     Intent intent = new Intent(MainActivity.this, ScreenService.class);
                     startService(intent);
 
-                    startActivity(reactRootIntent);
+//                    startActivity(reactRootIntent);
 
                 }else
                 {

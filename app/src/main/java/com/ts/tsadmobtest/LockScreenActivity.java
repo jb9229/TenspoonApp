@@ -45,6 +45,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.facebook.react.*;
+import com.facebook.react.common.LifecycleState;
+import com.facebook.react.shell.MainReactPackage;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
@@ -60,6 +63,8 @@ import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.ts.tsadmobtest.network.AsyncHttpIMGRequest;
 import com.ts.tsadmobtest.network.AsyncHttpRequest;
+import com.ts.tsadmobtest.react.TSReactActivity;
+import com.ts.tsadmobtest.react.TSReactPackage;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -81,8 +86,6 @@ public class LockScreenActivity extends Activity {
 
     private static final String ADMOB_AD_UNIT_ID   = "ca-app-pub-3940256099942544/2247696110";
     private static final String ADMOB_APP_ID        = "ca-app-pub-3940256099942544~3347511713";
-
-    private TextView poemTextView;
 
     private ActionBarDrawerToggle mDrawerToggle;
     private Button mRefresh;
@@ -119,16 +122,6 @@ public class LockScreenActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen);
-
-        //Poem Area
-        poemTextView    =   (TextView) findViewById(R.id.poemTextView);
-
-        String poem =   "해당화\n\n\n\n 이육사 \n\n\n 당신은 봄이 오기 전에 오신다고 하였습니다. \n 봄은 이미 지났습니다.";
-        SpannableStringBuilder poemStrBuilder = new SpannableStringBuilder(poem);
-
-        poemStrBuilder.setSpan(new StyleSpan(Typeface.BOLD), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        poemTextView.setText(poemStrBuilder);
 
 
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -216,17 +209,28 @@ public class LockScreenActivity extends Activity {
         CustomAdapter adapter = new CustomAdapter(this, 0, items);
         sideListview.setAdapter(adapter);
 
+        ReactRootView mReactRootView          =   new ReactRootView(this);
+        ReactInstanceManager mReactInstanceManager  =    ReactInstanceManager.builder()
+                .setApplication(getApplication())
+                .setBundleAssetName("index.android.bundle")
+                .setJSMainModuleName("index.android")
+                .addPackage(new MainReactPackage())
+                .addPackage(new TSReactPackage())
+                .setUseDeveloperSupport(com.facebook.react.BuildConfig.DEBUG)
+                .setInitialLifecycleState(LifecycleState.RESUMED)
+                .build();
+
+        mReactRootView.startReactApplication(mReactInstanceManager, "Tenspoon", null);
+
+        FrameLayout contentFrame = (FrameLayout) findViewById(R.id.native_content_frame);
+        contentFrame.addView(mReactRootView);
+
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                 | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 
         // Initialize the Mobile Ads SDK.
         MobileAds.initialize(this, ADMOB_APP_ID);
-
-        adUnlockSeekbar = (SeekBar) findViewById(R.id.ad_unlock_seekbar);
-        adUnlockSeekbar.setOnSeekBarChangeListener(new MyOnSeekBarChangeListener());
-        adUnlockSeekbar.setOnTouchListener(new MyOnTouchListener());
-
 
         refreshAd(true, false);
 

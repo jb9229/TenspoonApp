@@ -38,7 +38,7 @@ dependencies {
     compile 'com.google.firebase:firebase-ads:9.6.1'
     compile 'com.github.semoncat.seekarc:library:0.1'
     compile 'com.google.android.gms:play-services-appindexing:9.6.1'
-    compile "com.facebook.react:react-native:0.40.0" // From node_modules.
+    compile "com.facebook.react:react-native:0.44.0" // From node_modules.
 
 }
 

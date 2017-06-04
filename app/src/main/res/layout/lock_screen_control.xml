@@ -76,19 +76,10 @@
 
                 </LinearLayout>
 
-                <LinearLayout
+                <FrameLayout
+                    android:id="@+id/native_content_frame"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <SeekBar
-                        android:id="@+id/ad_unlock_seekbar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/unlock_bg"
-                        android:thumb="@drawable/unlock_thumb"
-                        android:progressDrawable="@android:color/transparent"
-                        android:progress="50"
-                        android:layout_margin="12dp"/>
-                </LinearLayout>
+                    android:layout_height="100dp" />
 
             </LinearLayout>
 
